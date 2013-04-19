@@ -17,6 +17,11 @@
 #include <errno.h>
 #include <arpa/inet.h> 
 
+int packData(unsigned char *buffer, unsigned int a, unsigned int b) {
+  memset(buffer, '\0', sizeof buffer);
+  memcpy(&buffer[1], (unsigned char*)&a, sizeof(unsigned int));
+  memcpy(&buffer[3], (unsigned char*)&b, sizeof(unsigned int));
+}
 
 int main(int argc, char *argv[]) {
   int sockfd = 0, n = 0;
@@ -65,6 +70,10 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  unsigned char* sendBuff;
+  packData(sendBuff, a, b);
+  write(sockfd, sendBuff, sizeof(sendBuff));
+
 
   // connect - bind socket to local address. Returns 0 if success, -1 else.
   if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
@@ -72,6 +81,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  write(sockfd, sendBuff, sizeoof(sendBuf));
   // read - Read data from socket with descriptor 'sockfd' and store it in
   //        buffer 'recvBuff'
   while ((n = read(sockfd, recvBuff, sizeof(recvBuff) - 1)) > 0) {
