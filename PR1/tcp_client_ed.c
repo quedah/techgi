@@ -5,7 +5,6 @@
  *
  */
 
-#include <iostream>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -17,20 +16,29 @@
 #include <errno.h>
 #include <arpa/inet.h> 
 
+#define MAX_BUFFER_LENGTH 100
+
 int packData(unsigned char *buffer, unsigned int a, unsigned int b) {
-  memset(buffer, '\0', sizeof buffer);
+  memset(buffer, '\0', sizeof(buffer));
   memcpy(&buffer[1], (unsigned char*)&a, sizeof(unsigned int));
   memcpy(&buffer[3], (unsigned char*)&b, sizeof(unsigned int));
 }
 
+void unpackData(unsigned char* buffer, unsigned int* a, unsigned int* b) {
+  *a = (buffer[0]<<8)|buffer[1];
+  *b = (buffer[2]<<8)|buffer[3];
+  printf("\n Unpacked values are:   %d  %d \n", *a, *b);
+}
+
 int main(int argc, char *argv[]) {
   int sockfd = 0, n = 0;
+  int serverPort;
+  struct hostent *he;
   char recvBuff[1024];
-  // Structs defined in <netinet/in.h>
-  struct sockaddr_in serv_addr;
-  int a, b;
+  struct sockaddr_in serv_addr;     // in <netinet/in.h>
+  uint32_t a, b;
 
-  printf("TCP client example\n\n");
+  printf("TCP client \n\n");
   
   // Check argument count.
   if (argc != 5) {
@@ -46,56 +54,55 @@ int main(int argc, char *argv[]) {
   if ((he=gethostbyname(argv[1])) == NULL) {  // get the host info
       herror("gethostbyname");
       exit(1);
+  } else {
+    printf("\n Get host info OK\n");
   }
-  // Fill buffer memory allocation with something.
   memset(recvBuff, '0', sizeof(recvBuff));
   
   // sockfd - Get socket descriptor. Returns -1 if failed.
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     printf("\n Error : Could not create socket \n");
     return 1;
+  } else {
+    printf("\n Create socket OK\n");
   }
 
-  // Fill server address mem. allocation with s.th.
   memset(&serv_addr, '0', sizeof(serv_addr));
-
-  // Specify protocol family (=> IPv4)
   serv_addr.sin_family = AF_INET;
-  // Specify port.
-  serv_addr.sin_port = htons(5000);
+  serv_addr.sin_port = htons(serverPort);
 
   // inet_pton - convert IPv4 addr. from text to binary form
   if (inet_pton(AF_INET, argv[1], &serv_addr.sin_addr) <= 0) {
     printf("\n inet_pton error occured\n");
     return 1;
+  } else {
+    printf("\n Inet Pton OK\n");
   }
-
-  unsigned char* sendBuff;
-  packData(sendBuff, a, b);
-  write(sockfd, sendBuff, sizeof(sendBuff));
 
 
   // connect - bind socket to local address. Returns 0 if success, -1 else.
   if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
     printf("\n Error : Connect Failed \n");
     return 1;
+  } else {
+    printf("\n Connect OK\n");
   }
 
-  write(sockfd, sendBuff, sizeoof(sendBuf));
-  // read - Read data from socket with descriptor 'sockfd' and store it in
-  //        buffer 'recvBuff'
-  while ((n = read(sockfd, recvBuff, sizeof(recvBuff) - 1)) > 0) {
-    recvBuff[n] = 0;
-    // fputs - write recvBuff to stdout stream.
-    // Returns non-neg. value on success, EOF on fail.
-    if (fputs(recvBuff, stdout) == EOF) {
-      printf("\n Error : Fputs error\n");
-    }
-  }
+  unsigned char* sendBuff;
+  sendBuff = (unsigned char*) malloc(4);
+  packData(sendBuff, a, b);
+  write(sockfd, sendBuff, sizeof(sendBuff));
 
-  if (n < 0) {
-    printf("\n Read error \n");
-  }
+  unsigned int* d;
+  unsigned int* e;
+  d = (unsigned int*) malloc(1);
+  e = (unsigned int*) malloc(1);
+  printf("\n Entered Data:  %d    %d \n" , a, b);
+  printf("\n sendBuff content at 0  %u \n", sendBuff[0]);
+  printf("\n sendBuff content at 1  %u \n", sendBuff[1]);
+  printf("\n sendBuff content at 2  %u \n", sendBuff[2]);
+  printf("\n sendBuff content at 3  %u \n", sendBuff[3]);
+  unpackData(sendBuff, d, e);
 
   return 0;
 }

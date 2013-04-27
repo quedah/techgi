@@ -42,8 +42,8 @@ int main(int argc, char *argv[]) {
   
   // Check argument count.
   if (argc != 5) {
-      fprintf(stderr,"Usage: tcpClient serverName serverPort int1 int2\n");
-      exit(1);
+    fprintf(stderr,"Usage: tcpClient serverName serverPort int1 int2\n");
+    exit(1);
   }
 
   serverPort = atoi(argv[2]);
@@ -52,12 +52,12 @@ int main(int argc, char *argv[]) {
   
   //Resolv hostname to IP Address
   if ((he=gethostbyname(argv[1])) == NULL) {  // get the host info
-      herror("gethostbyname");
-      exit(1);
+    herror("gethostbyname");
+    exit(1);
   } else {
     printf("\n Get host info OK\n");
   }
-  // Fill buffer memory allocation with something.
+
   memset(recvBuff, '0', sizeof(recvBuff));
   
   // sockfd - Get socket descriptor. Returns -1 if failed.
@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
     printf("\n Create socket OK\n");
   }
 
-  // Fill server address mem. allocation with s.th.
   memset(&serv_addr, '0', sizeof(serv_addr));
 
   serv_addr.sin_family = AF_INET;
