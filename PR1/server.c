@@ -44,29 +44,11 @@ unsigned int gcd(unsigned int u, unsigned int v) {
 
 unsigned int getGCD(unsigned int a, unsigned int b) {
   return gcd(a, b);
-  /*
-  if (a > b) {
-    if (a % b == 0) {
-      return b;
-    } else {
-      b = a % b;
-      getGCD(a, b);
-    }
-  } else {
-    if (b % a == 0) {
-      return a;
-    } else {
-      a = b % a;
-      getGCD(a, b);
-    }
-  }
-  */
 }
 
 void unpackData(unsigned char* buffer, unsigned int* a, unsigned int* b) {
   *a = (buffer[0]<<8)|buffer[1];
   *b = (buffer[2]<<8)|buffer[3];
-  printf("\n Unpacked values are:   %d  %d \n", *a, *b);
 }
 
 void readBuff(unsigned char* buffer) {
@@ -75,7 +57,7 @@ void readBuff(unsigned char* buffer) {
     b = (unsigned int*) malloc(2);
 
     unpackData(buffer, a, b);
-    printf("\n Received something %d and %d.\n", *a, *b);
+    printf("\n Received values %d and %d.\n", *a, *b);
     unsigned int gcd = getGCD(*a, *b);
     printf("\n GCD is %d \n", gcd);
 
@@ -102,37 +84,6 @@ int main(int argc, char *argv[])
   printf(" \n Using server address %s \n", serverAddr);
   printf(" \n Using TCP Port %d \n", tcpPort);
   printf(" \n Using UDP Port %d \n", udpPort);
-
-  /****************************************************************************
-   *  TCP Server
-   * *************************************************************************/
-  /*
-  int listenfd = 0, connfd = 0;
-  struct sockaddr_in serv_addr; 
-
-  char sendBuff[1025];
-
-  listenfd = socket(AF_INET, SOCK_DGRAM, 0);
-  memset(&serv_addr, '0', sizeof(serv_addr));
-  memset(sendBuff, '0', sizeof(sendBuff)); 
-
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  serv_addr.sin_port = htons(tcpPort); 
-
-  bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
-
-  listen(listenfd, 10); 
-
-  while(1)
-  {
-    printf("\n Accepting conns\n");
-    connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
-
-    close(connfd);
-    sleep(1);
-  }
-  */
 
   /****************************************************************************
    *  TCP Server
@@ -190,6 +141,7 @@ int main(int argc, char *argv[])
     printf("\n ERROR: bind failed. \n");
     exit(1);
   } 
+  printf("\n Accepting data on UDP port.\n");
 
   fd_set readfds;
   int max_sd, rc;
@@ -198,12 +150,12 @@ int main(int argc, char *argv[])
   timeout.tv_usec = 0;
   if (tcp_sd > udp_sd)  max_sd = tcp_sd;
   else                  max_sd = udp_sd;
-  FD_SET(udp_sd, &readfds);
-  FD_SET(tcp_sd, &readfds);
 
-  printf("\n Accepting data on UDP port.\n");
 
   while (1) {
+    // Set FD sets.
+    FD_SET(tcp_sd, &readfds);
+    FD_SET(udp_sd, &readfds);
     rc = select(max_sd + 1, &readfds, NULL, NULL, &timeout);
     if (rc < 0) {
       printf("\n ERROR: select() failed. \n");
@@ -228,7 +180,6 @@ int main(int argc, char *argv[])
           struct sockaddr_in from;
           socklen_t fromLength = sizeof(from);
 
-          printf("\n Calling recvfrom.\n");
           int receivedBytes = recvfrom(
               udp_sd, 
               (char*) recvBuff, 
@@ -256,12 +207,7 @@ int main(int argc, char *argv[])
           readBuff(recvBuff);
         }
       }
-    }
-
-    // Reset FD sets.
-    FD_SET(tcp_sd, &readfds);
-    FD_SET(udp_sd, &readfds);
-  }
-   
-}
+    } // End For Loop through sockets
+  }   // End While
+}     // End main()
   
