@@ -14,7 +14,37 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-int getGCD(int a, int b) {
+#define MAX_BUFFER_LENGTH 100
+#define BACKLOG		20
+
+unsigned int gcd(unsigned int u, unsigned int v) {
+	// simple cases (termination)
+	if (u == v)
+		return u;
+	if (u == 0)
+		return v;
+	if (v == 0)
+		return u;
+
+	// look for factors of 2
+	if (~u & 1) // u is even
+		if (v & 1) // v is odd
+			return gcd(u >> 1, v);
+		else
+			// both u and v are even
+			return gcd(u >> 1, v >> 1) << 1;
+	if (~v & 1) // u is odd, v is even
+		return gcd(u, v >> 1);
+
+	// reduce larger argument
+	if (u > v)
+		return gcd((u - v) >> 1, v);
+	return gcd((v - u) >> 1, u);
+}
+
+unsigned int getGCD(unsigned int a, unsigned int b) {
+  return gcd(a, b);
+  /*
   if (a > b) {
     if (a % b == 0) {
       return b;
@@ -30,12 +60,27 @@ int getGCD(int a, int b) {
       getGCD(a, b);
     }
   }
+  */
 }
 
 void unpackData(unsigned char* buffer, unsigned int* a, unsigned int* b) {
   *a = (buffer[0]<<8)|buffer[1];
   *b = (buffer[2]<<8)|buffer[3];
   printf("\n Unpacked values are:   %d  %d \n", *a, *b);
+}
+
+void readBuff(unsigned char* buffer) {
+    unsigned int* a, *b;
+    a = (unsigned int*) malloc(1);
+    b = (unsigned int*) malloc(2);
+
+    unpackData(buffer, a, b);
+    printf("\n Received something %d and %d.\n", *a, *b);
+    unsigned int gcd = getGCD(*a, *b);
+    printf("\n GCD is %d \n", gcd);
+
+    free (a);
+    free (b);
 }
 
 int main(int argc, char *argv[])
@@ -90,26 +135,57 @@ int main(int argc, char *argv[])
   */
 
   /****************************************************************************
-   *  UDP Server
+   *  TCP Server
    * *************************************************************************/
-  // Create socket.
-  int listenfd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (listenfd <= 0){
-    printf("\n ERROR: Failed to create socket. \n");
+  // Create TCP socket.
+  int tcp_sd = socket(AF_INET, SOCK_STREAM, 0);
+  if (tcp_sd <= 0){
+    printf("\n ERROR: Failed to create TCP socket. \n");
     exit(1);
   }
 
-  // Create address.
-  struct sockaddr_in address;
-  memset(&address, '\0', sizeof(address));
-  address.sin_family = AF_INET;
-  address.sin_port = htons(udpPort); 
-  address.sin_addr.s_addr = inet_addr(serverAddr);
-  address.sin_addr.s_addr = htonl(INADDR_ANY);
-  //int len_addr = sizeof()
+  // Create TCP address.
+  struct sockaddr_in tcp_address;
+  memset(&tcp_address, '\0', sizeof(tcp_address));
+  tcp_address.sin_family = AF_INET;
+  tcp_address.sin_port = htons(tcpPort); 
+  tcp_address.sin_addr.s_addr = inet_addr(serverAddr);
+  tcp_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
   int bind_stat;
-  bind_stat = bind(listenfd, (struct sockaddr*)&address, sizeof(address));
+  bind_stat = bind(tcp_sd, (struct sockaddr*)&tcp_address, sizeof(tcp_address));
+  if (bind_stat == -1) {
+    printf("\n ERROR: bind TCP socket failed. \n");
+    exit(1);
+  } 
+
+  if (listen(tcp_sd, BACKLOG) == -1) {
+    printf("\n Listen on TCP socket failed.\n");
+    exit(1);
+  } else {
+    printf("\n Listening on TCP socket.\n");
+  }
+
+  /****************************************************************************
+   *  UDP Server
+   * *************************************************************************/
+  // Create UDP socket.
+  int udp_sd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (udp_sd <= 0){
+    printf("\n ERROR: Failed to create UDP socket. \n");
+    exit(1);
+  }
+
+  // Create UDP address.
+  struct sockaddr_in udp_address;
+  memset(&udp_address, '\0', sizeof(udp_address));
+  udp_address.sin_family = AF_INET;
+  udp_address.sin_port = htons(udpPort); 
+  udp_address.sin_addr.s_addr = inet_addr(serverAddr);
+  udp_address.sin_addr.s_addr = htonl(INADDR_ANY);
+  //int len_addr = sizeof()
+
+  bind_stat = bind(udp_sd, (struct sockaddr*)&udp_address, sizeof(udp_address));
   if (bind_stat == -1) {
     printf("\n ERROR: bind failed. \n");
     exit(1);
@@ -120,8 +196,10 @@ int main(int argc, char *argv[])
   struct timeval timeout;
   timeout.tv_sec = 3 * 60;
   timeout.tv_usec = 0;
-  max_sd = listenfd;
-  FD_SET(listenfd, &readfds);
+  if (tcp_sd > udp_sd)  max_sd = tcp_sd;
+  else                  max_sd = udp_sd;
+  FD_SET(udp_sd, &readfds);
+  FD_SET(tcp_sd, &readfds);
 
   printf("\n Accepting data on UDP port.\n");
 
@@ -137,38 +215,52 @@ int main(int argc, char *argv[])
       exit(1);
     }
     
-    for (int i = 0; i <= max_sd; i++) {
-      if (FD_ISSET(i, &readfds))
+    int i = 0;
+    for (i = 0; i <= max_sd; i++) {
+      if (FD_ISSET(i, &readfds)) {
+        
+        // Receive on UDP port
+        if (i == udp_sd) {
+          char recvBuff[100];
+          memset(recvBuff, '0', sizeof(recvBuff)); 
+
+          unsigned int maxPackSize = sizeof(recvBuff);
+          struct sockaddr_in from;
+          socklen_t fromLength = sizeof(from);
+
+          printf("\n Calling recvfrom.\n");
+          int receivedBytes = recvfrom(
+              udp_sd, 
+              (char*) recvBuff, 
+              maxPackSize, 
+              0, 
+              (struct sockaddr*) &from, 
+              &fromLength);
+
+          if (receivedBytes <= 0) break;
+          readBuff(recvBuff);
+
+        // Receive on TCP port
+        } else if (i == tcp_sd) {
+          char recvBuff[100];
+          memset(recvBuff, '0', sizeof(recvBuff)); 
+          unsigned int maxPackSize = sizeof(recvBuff);
+          int incoming_tcp_sd;
+          struct sockaddr_in from;
+          socklen_t fromLength = sizeof(from);
+          incoming_tcp_sd = accept(
+              tcp_sd,
+              (struct sockaddr*) &from, 
+              &fromLength);
+          read(incoming_tcp_sd, recvBuff, sizeof recvBuff);
+          readBuff(recvBuff);
+        }
+      }
     }
-    char recvBuff[100];
-    memset(recvBuff, '0', sizeof(recvBuff)); 
 
-    unsigned int maxPackSize = sizeof(recvBuff);
-    struct sockaddr_in from;
-    socklen_t fromLength = sizeof(from);
-
-    printf("\n Calling recvfrom.\n");
-    int receivedBytes = recvfrom(
-        listenfd, 
-        (char*) recvBuff, 
-        maxPackSize, 
-        0, 
-        (struct sockaddr*) &from, 
-        &fromLength);
-
-    if (receivedBytes <= 0) break;
-
-    unsigned int* a, *b;
-    a = (unsigned int*) malloc(1);
-    b = (unsigned int*) malloc(2);
-
-    unpackData(recvBuff, a, b);
-    printf("\n Received something %d and %d.\n", *a, *b);
-    int gcd = getGCD(*a, *b);
-    printf("\n GCD is %d \n", gcd);
-
-    free (a);
-    free (b);
+    // Reset FD sets.
+    FD_SET(tcp_sd, &readfds);
+    FD_SET(udp_sd, &readfds);
   }
    
 }
