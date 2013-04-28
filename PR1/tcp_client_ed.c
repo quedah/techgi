@@ -18,6 +18,12 @@
 
 #define MAX_BUFFER_LENGTH 100
 
+int packDataTest(unsigned char *buffer, unsigned int a, unsigned int b) {
+  memset(buffer, '\0', sizeof(buffer));
+  memcpy(&buffer[1], (unsigned char*)&a, sizeof(unsigned int));
+  memcpy(&buffer[3], (unsigned char*)&b, sizeof(unsigned int));
+}
+
 int packData(unsigned char *buffer, unsigned int a, unsigned int b) {
   memset(buffer, '\0', sizeof(buffer));
   memcpy(&buffer[1], (unsigned char*)&a, sizeof(unsigned int));

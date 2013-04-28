@@ -9,7 +9,10 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
-#include <time.h> 
+#include <sys/time.h> 
+#include <sys/select.h> 
+#include <fcntl.h>
+#include <ctype.h>
 
 int getGCD(int a, int b) {
   if (a > b) {
@@ -111,6 +114,13 @@ int main(int argc, char *argv[])
     printf("\n ERROR: bind failed. \n");
     exit(1);
   } 
+
+  fd_set readfds, writefds, exceptfds;
+  int max_sd, rc;
+  max_sd = listenfd;
+  FD_SET(listenfd, &readfds);
+  //rc = select(max_sd + 1; &);
+
 
   while (1) {
     printf("\n Accepting data on UDP port.\n");
