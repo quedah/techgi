@@ -115,15 +115,31 @@ int main(int argc, char *argv[])
     exit(1);
   } 
 
-  fd_set readfds, writefds, exceptfds;
+  fd_set readfds;
   int max_sd, rc;
+  struct timeval timeout;
+  timeout.tv_sec = 3 * 60;
+  timeout.tv_usec = 0;
   max_sd = listenfd;
   FD_SET(listenfd, &readfds);
-  //rc = select(max_sd + 1; &);
 
+  printf("\n Accepting data on UDP port.\n");
 
   while (1) {
-    printf("\n Accepting data on UDP port.\n");
+    rc = select(max_sd + 1, &readfds, NULL, NULL, &timeout);
+    if (rc < 0) {
+      printf("\n ERROR: select() failed. \n");
+      exit(1);
+    }
+
+    if (rc == 0) {
+      printf("\n select() timed out. End program.\n");
+      exit(1);
+    }
+    
+    for (int i = 0; i <= max_sd; i++) {
+      if (FD_ISSET(i, &readfds))
+    }
     char recvBuff[100];
     memset(recvBuff, '0', sizeof(recvBuff)); 
 
