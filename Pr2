@@ -1,0 +1,11 @@
+package service;
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
+@WebService
+public interface functionInterface {
+  @WebMethod String welcome(String name);
+	
+	
+	@WebMethod Integer plus(int a, int b);
+}
