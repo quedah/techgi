@@ -154,6 +154,7 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://gpscalcWebservice.techgi4.tuberlin.de/", name = "getDistance")
     public JAXBElement<GetDistance> createGetDistance(GetDistance value) {
         return new JAXBElement<GetDistance>(_GetDistance_QNAME, GetDistance.class, null, value);
+
     }
 
 }

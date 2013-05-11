@@ -1,5 +1,6 @@
 package de.tuberlin.techgi4.gpscalcwebservice;
 
+
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
@@ -44,4 +45,5 @@ public class Client {
 		System.out.println(coordV.distance+":"+coordV.velocity);
 		System.out.println("------->>  Call Ended");
 	}
+
 }

@@ -1,6 +1,7 @@
 
 package de.tuberlin.techgi4.gpscalcwebservice;
 
+
 import java.util.List;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -75,5 +76,6 @@ public interface GPSCalc {
         String arg0,
         @WebParam(name = "arg1", targetNamespace = "")
         double arg1);
+
 
 }

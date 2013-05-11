@@ -54,6 +54,7 @@ public class GPSCalcImpl implements GPSCalc {
 	ArrayList<UUID> getOtherClientIdin(UUID clientID, double velocity) {
 		// TODO Auto-generated method stub
 		return null;
+
 	}
 
 }
