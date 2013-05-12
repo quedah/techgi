@@ -29,7 +29,12 @@ public class GPSCoordinates {
 	}
 
 	public double calcVelocityFrom(double distance, Date timeAfter) {
-		return distance/(timeAfter.getTime()/1000-this.measurementTime.getTime()/1000);
+		return distance
+				/ (timeAfter.getTime() / 1000 - this.measurementTime.getTime() / 1000);
+	}
+
+	public boolean isInRadius(double radius, GPSCoordinates otherCoordinate) {
+		return (calcDistanceTo(otherCoordinate) <= radius) && (Math.abs(this.measurementTime.getTime()-otherCoordinate.measurementTime.getTime())<1000);
 	}
 
 }

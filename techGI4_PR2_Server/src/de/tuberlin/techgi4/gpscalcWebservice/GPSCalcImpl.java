@@ -1,6 +1,7 @@
 package de.tuberlin.techgi4.gpscalcWebservice;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.UUID;
 
@@ -29,7 +30,7 @@ public class GPSCalcImpl implements GPSCalc {
 		double velocity = Double.NaN;
 		// get old coordinates of client
 		GPSCoordinates oldCoordinates = clientLocalizationMap.get(clientID);
-		
+
 		// no old data is stored for client
 		if (oldCoordinates == null) {
 			distance = Double.NaN;
@@ -38,22 +39,35 @@ public class GPSCalcImpl implements GPSCalc {
 			// calculate distance
 			distance = oldCoordinates.calcDistanceTo(currentCoordinates);
 			// calculate velocity
-			velocity = oldCoordinates.calcVelocityFrom(distance, currentCoordinates.measurementTime);
-			//remove old value
+			velocity = oldCoordinates.calcVelocityFrom(distance,
+					currentCoordinates.measurementTime);
+			// remove old value
 			clientLocalizationMap.remove(clientID);
 		}
 		// store new Coordinates
 		clientLocalizationMap.put(clientID, currentCoordinates);
-		
-		return new CoordinateVector(distance,velocity);
+
+		return new CoordinateVector(distance, velocity);
 	}
 
 	@Override
 	@WebMethod
-	public
-	ArrayList<UUID> getOtherClientIdin(UUID clientID, double velocity) {
-		// TODO Auto-generated method stub
-		return null;
+	public ArrayList<UUID> getOtherClientIdin(UUID clientID, double velocity) {
+		// other clients near by
+		ArrayList<UUID> clientsSourround = new ArrayList<UUID>();
+		// get coordinates of client
+		GPSCoordinates clientCoordinates = clientLocalizationMap.get(clientID);
+		Enumeration<UUID> keyEnum = clientLocalizationMap.keys();
+		while (keyEnum.hasMoreElements()) {
+			UUID currentClientID = keyEnum.nextElement();
+			if (clientLocalizationMap.get(currentClientID).isInRadius(velocity,
+					clientCoordinates)) {
+				clientsSourround.add(currentClientID);
+			}
+
+		}
+
+		return clientsSourround;
 
 	}
 
