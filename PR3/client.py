@@ -35,7 +35,6 @@ class VectorClock(dict):
     def toxml(self, xmldoc ):
         root = xmldoc.createElement('VC')
 
-        print self
         for name, value in self.items():
             node = xmldoc.createElement("Process")
 
