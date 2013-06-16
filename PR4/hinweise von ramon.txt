@@ -1,0 +1,18 @@
+Meine Adressen:
+Fritz!box 	192.168.178.1 	Avm_60:5c:dd
+Mein Lapi	192.168.178.40	Apple_14:e2:80
+
+Bisschen zur Erklärung:
+Ich hab erst Wireshark live capture gestartet und danach erst sudo dhclient -r
+eingegeben. Die ersten 3 Einträge sind halt noch vor dem eingeben, da
+ich auch gucken
+wollte ob alles geschlossen hab.
+
+Bei HomePlug handelt es sich wohl um ein ping oder so. Auf jeden Fall kam der
+immer nach einer bestimmten Zeit regelmäßig. Hab halt nach jeder Aktion bisschen
+gewartet,  alle Pakete verschickt werden konnten.
+
+
+No 4   ---- >  hab ich versucht auf mein lokales Netzwerk zuzugreifen
+No 35  ---- > firefox geöffnet
+No 93  -----> "tu berlin" in firefox startsite gesucht
