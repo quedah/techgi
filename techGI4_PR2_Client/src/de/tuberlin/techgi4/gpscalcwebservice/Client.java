@@ -18,7 +18,7 @@ public class Client {
 		GPSCalcImplService service = new GPSCalcImplService();
 		GPSCalc gpsCalc = service.getGPSCalcImplPort();
 		System.out.println("------->>  Call Started");
-		System.out.println(gpsCalc.sayHello("Ali"));
+		System.out.println(gpsCalc.sayHello("TechGi GR2"));
 		System.out.println("------->>  Call Ended");
 		GpsCoordinates currentGPSCoordinate = new GpsCoordinates();
 		
