@@ -1,4 +1,5 @@
-{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1031{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1031{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\froman\fprq2\fcharset0 Times New Roman;}{\f2\fnil\fcharset0 sans-serif;}{\f3\fnil\fcharset2 Symbol;}}
+{\colortbl ;\red255\green0\blue0;\red0\green0\blue255;}
 {\*\generator Riched20 6.2.9200}\viewkind4\uc1 
 \pard\sa200\sl276\slmult1\f0\fs22\lang7 Theorie 5 \par
 Aufgabe 1\par
@@ -427,8 +428,40 @@ e\tab\tab\tab b,d,g\par
 f\tab\tab\tab b,d\par
 g\tab\tab\tab b,d\par
 \par
-\b Aufgabe 3\par
-\b0 b)\par
-c)\par
+
+\pard\nowidctlpar\sa200\sl276\slmult1\b\f1\fs44\lang255 Aufgabe 3\b0\fs24\lang1023\par
+\b\fs28\lang255 Ein Paket soll \'fcber einen st\'f6ranf\'e4lligen Kanal \'fcbertragen werden. Die L\'e4nge des Pakets betr\'e4gt n Bits. Bei der \'dcbertragung wird jedes Bit mit der Wahrscheinlich-keit pBER verf\'e4lscht. Die Fehler treten unabh\'e4ngig voneinander auf.\b0\fs24\lang1023\par
+\cf1\fs22\lang255 a) Tafelaufgabe. Wird im Termin vorgerechnet, ist also nicht zu Hause zu l\'f6sen. Mitarbeit und damit Vorbereitung ist jedoch dennoch erw\'fcnscht: Mit welcherWahrscheinlichkeit pk sind in einemPaket genau k Bits verf\'e4lscht?  \cf0\fs24\lang1023\par
+\b\fs28\lang255 b) Bestimmen Sie dieWahrscheinlichkeit pPER daf\'fcr, dass ein Paket mindestens einen Fehler hat. (2P)\b0\fs24\lang1023\par
+
+\pard{\pntext\f3\'B7\tab}{\*\pn\pnlvlblt\pnf3\pnindent0{\pntxtb\'B7}}\nowidctlpar\fi-360\li720\sa200\sl276\slmult1\fs22\lang255 Wahrscheinlichkeit das ein Paket keinen Fehler hat: (1- PbitErrorRate)^n\fs24\lang1023\par
+{\pntext\f3\'B7\tab}\fs22\lang255 Wahrscheinlichkeit das ein Paket mindestens einen Fehler hat: 1 - (1- PbitErrorRate)^n = PpaketerrorRate = PPer\fs24\lang1023\par
+
+\pard\nowidctlpar\fi-360\li-25\sa200\sl276\slmult1\b\fs28\lang255 c) Wie gross ist die Wahrscheinlichkeit daf\'fcr, dass ein Paket nach genau l \'dcbertragungsversuchen fehlerfrei beim Empf\'e4nger ankommt? (2P)\b0\fs24\lang1023\par
+
+\pard{\pntext\f3\'B7\tab}{\*\pn\pnlvlblt\pnf3\pnindent0{\pntxtb\'B7}}\nowidctlpar\fi-360\li720\sa200\sl276\slmult1\fs22\lang255 Die Wahrscheinlichkeit das das Paket nach genau k \'dcbertragungen (das erstemal) fehlerfrei angekommen ist: (1 - (1- PbitErrorRate)^n )^k-1  * (1 -Pbiterrorrate)^n = (Pper)^k-1  *  (1- PbitErrorRate)^n\fs24\lang1023\par
+
+\pard\nowidctlpar\sa200\sl276\slmult1\b\fs44\lang255 Aufgabe 4\b0\fs24\lang1023\par
+\b\fs28\lang255 Berechnen Sie die Effizienz h = Kanalzeit zur  Ubertragung von Payload Gesamtkanalzeit ; h 2 [0; 1] des Send-and-Wait Verfahrens. Gehen Sie davon aus, dass bei der \'a8Ubertragung keine Fehler auftreten. Die Gr \'a8 o\'dfe jedes Pakets ist nd Bits, die Gr\'f6\'dfe der Acknowledgements na Bits. Bei jeder Daten\'fcbertragung entsteht eine Verz\'f6gerung t . Die Datenrate des verwendeten Mediums ist R. Eine Skizze hilft.\b0\fs24\lang1023\par
+
+\pard{\pntext\f3\'B7\tab}{\*\pn\pnlvlblt\pnf3\pnindent0{\pntxtb\'B7}}\nowidctlpar\fi-360\li720\sa200\sl276\slmult1\fs22\lang255 Aaaa\fs24\lang1023\par
+
+\pard\nowidctlpar\sa200\sl276\slmult1\par
+\b\fs44\lang255 Aufgabe 5\b0\fs24\lang1023\par
+\cf1\i\f2\fs20\lang255 GoBackN == sendet N Pakete und wartet dann auf \lang1023 Best\'e4tigung, wiederholt alle Pakete ab fehlerhaftem Paket\cf0\i0\f1\fs24\par
+\par
+\b\fs44\lang255 Aufgabe 6\b0\fs24\lang1023\par
+\b\fs28\lang255 Wie gro\'df ist in einem Ethernet-Netzwerk die Wahrscheinlichkeit, dass sich zwei Stationen erst nach der drittenKollision nicht mehr gegenseitig bei der \'dcbertragung st\'f6ren, wenn sie anfangs gleichzeitig mit dem Senden beginnen wollen?\b0\fs24\lang1023\par
+\fs22\lang255 Tritt eine Kollision auf wird das gleichzeitige Senden mit einem Jam-Signal unterbunden. Die beiden Rechner die gleichzeitig gesendet haben warten nun durch eine Zufallszahl generiert einem bestimmte Zeitperiode. Durch verwenden unterschiedlicher Zufallszahlen ist gew\'e4hrleistet das sie unterschiedlich lange warten und dadurch nach einander senden. \fs24\lang1023\par
+\fs22\lang255 Berechnung des Wartens (Kollisionanzahl: i):\fs24\lang1023\par
+\fs22\lang255 p(i) = (2^i) \endash  1\fs24\lang1023\par
+\fs22\lang255 p(0) = 0%\fs24\lang1023\par
+\fs22\lang255 p(1) = (2^1)-1 = 0 bis 1\fs24\lang1023\par
+\fs22\lang255 p(2) = (2^2)-1 = 0 bis 3\fs24\lang1023\par
+\fs22\lang255 Die Wahrscheinlichkeit auf 3 Kollisionen hintereinander der selben Knoten liegt bei 12,5%.\fs24\lang1023\par
+\par
+\b\fs22\lang255 [Quelle: {\b0{\field{\*\fldinst{HYPERLINK http://books.google.de/books?id=d7ODAanb_JMC&pg=PA281&dq=ethernet+wahrscheinlichkeit+von+kollisionen?&hl=de&sa=X&ei=ryXHUa-UIoXUtQbg64CIAQ&ved=0CDQQ6AEwAA#v=onepage&q=ethernet%20wahrscheinlichkeit%20von%20kollisionen%3F&f=false }}{\fldrslt{http://books.google.de/books?id=d7ODAanb_JMC&pg=PA281&dq=ethernet+wahrscheinlichkeit+von+kollisionen?&hl=de&sa=X&ei=ryXHUa-UIoXUtQbg64CIAQ&ved=0CDQQ6AEwAA#v=onepage&q=ethernet%20wahrscheinlichkeit%20von%20kollisionen%3F&f=false\ul0\cf0}}}}\b0\f1\fs24\lang1023  ]\par
+
+\pard\sa200\sl276\slmult1\b\f0\fs22\lang7\par
 }
  
