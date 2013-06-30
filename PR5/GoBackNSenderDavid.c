@@ -384,7 +384,15 @@ int main(int argc, char** argv) {
                 struct timeval savetimeout;
                 timeradd(&currentTime, &timeout, &savetimeout);
                 getDataPacketFromBuffer(dataBuffer, nextSendSeqNo-1)->timeout=&savetimeout;
-                if
+                if(timerExpiration.tv_sec=LONG_MAX){
+                	&timerExpiration=&savetimeout
+                	DEBUGOUT("TimerExpiration set..")
+                }
+                //checking if current time is bigger timerExpiration. resending of all packages.
+                if(&timercmp(&currentTime, &timerExpiration, >=)){
+                	nextSendSeqNo=0;
+                	timerExpiration.tv_sec =LONG_MAX;
+                }
                 
         // ###########################################################################
 
