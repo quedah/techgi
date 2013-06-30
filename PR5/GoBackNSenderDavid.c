@@ -337,7 +337,7 @@ int main(int argc, char** argv) {
 
         // Send packets
         if (FD_ISSET(s, &writefds)) {
-            while (/* YOUR TASK: When are you allowed to send new packets? */) {
+            while (nextSendSeqNo < window /* YOUR TASK: When are you allowed to send new packets? */) {
                 DataPacket * data = getDataPacketFromBuffer(dataBuffer, nextSendSeqNo);
 
                 // Send data
@@ -355,6 +355,11 @@ int main(int argc, char** argv) {
                 /* YOUR TASK: Sending was successful, what now? 
                  * - Update sequence numbers
                  */
+                 
+ // #########################################################################
+                nextSendSeqNo = nextSendSeqNo +1;
+
+   // ############################################################
 
 
                 // Update timers
@@ -375,6 +380,13 @@ int main(int argc, char** argv) {
                  * - timercmp(a, b, cmp) // NOTE: cmp is a comparison operator
                  *                          like <, >, <=, >=, ==
                  */
+         // ###########################################################################
+                struct timeval savetimeout;
+                timeradd(&currentTime, &timeout, &savetimeout);
+                getDataPacketFromBuffer(dataBuffer, nextSendSeqNo-1)->timeout=&savetimeout;
+                if
+                
+        // ###########################################################################
 
 
             }
