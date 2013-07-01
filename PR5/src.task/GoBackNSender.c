@@ -40,8 +40,8 @@
 #define DEBUGOUT(...)
 #endif
 
-#define DEFAULT_LOCAL_PORT 12005
-#define DEFAULT_REMOTE_PORT 4343
+#define DEFAULT_LOCAL_PORT 12125
+#define DEFAULT_REMOTE_PORT 4848
 #define DEFAULT_PAYLOAD_SIZE 1024
 #define MAX_FILE_SIZE 1024
 
@@ -154,7 +154,7 @@ bool readIntoBuffer(FILE* file, long seqNo) {
     dataPacket->packet->seqNoExpected = -1;
     dataPacket->packet->hasErrors = false;
     size_t bytesRead = fread(dataPacket->packet->data, 1, DEFAULT_PAYLOAD_SIZE, file);
-    DEBUGOUT("FILE: %u bytes read\n", bytesRead);
+    DEBUGOUT("FILE: %zu bytes read\n", bytesRead);
     dataPacket->packet->size = bytesRead + sizeof(GoBackNMessageStruct);
     if (bytesRead < DEFAULT_PAYLOAD_SIZE) {
         if (ferror(file)) {
@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
     // open connection
     int s = openConnection();
 
-    while (/* YOUR TASK: When are we finished? */) {
+    while (lastAckSeqNo<veryLastSeqNo) {
         DEBUGOUT("nextSendSeqNo: %ld, lastAckSeqNo: %ld\n", nextSendSeqNo, lastAckSeqNo);
 
         fd_set readfds, writefds;
@@ -259,11 +259,43 @@ int main(int argc, char** argv) {
             }
             DEBUGOUT("SOCKET: %d bytes received\n", bytesRead);
 
-            /* YOUR TASK:
-             * - Check acknowledgement for errors
-             * - Are new packets acknowledged by this packet?
-             * - Free buffers of acknowledged packets
-             * - Set lastAckSeqNo as needed
+            /* YOUR TASK:*/
+              // Check acknowledgement for errors
+			 if(ack->hasErrors)
+			 {
+				DEBUGOUT("ack has error\n");
+			 } else {
+			 // Are new packets acknowledged by this packet?
+				if(ack->seqNoExpected-1<=lastAckSeqNo)
+				{
+					DEBUGOUT("ack number smaller than last recieved ack number\n");
+				}
+				else
+				{
+					// Free buffers of acknowledged packets
+					freeBuffer(dataBuffer, lastAckSeqNo, ack->seqNoExpected-1);
+					
+					// Set lastAckSeqNo as needed
+					lastAckSeqNo=ack->seqNoExpected-1;
+					
+					// Recalculate timerExpiration, distinguish between two cases
+					
+					//# No packets waiting for acknowledgement
+					// TODO
+					// # Still sent but unacknowledged packets in the buffer
+					DataPacket* dp=getDataPacketFromBuffer(dataBuffer, ack->seqNoExpected+1);
+					if(dp)
+					{
+						timerExpiration=dp->timeout;
+					}
+					
+					
+				}
+			}
+			 /*
+             * 
+             * - 
+             * - 
              * - Recalculate timerExpiration, distinguish between two cases:
              *   # Still sent but unacknowledged packets in the buffer
              *   # No packets waiting for acknowledgement
@@ -304,7 +336,7 @@ int main(int argc, char** argv) {
 
         // Send packets
         if (FD_ISSET(s, &writefds)) {
-            while (/* YOUR TASK: When are you allowed to send new packets? */) {
+            while (nextSendSeqNo < window /* YOUR TASK: When are you allowed to send new packets? */) {
                 DataPacket * data = getDataPacketFromBuffer(dataBuffer, nextSendSeqNo);
 
                 // Send data
@@ -322,6 +354,11 @@ int main(int argc, char** argv) {
                 /* YOUR TASK: Sending was successful, what now? 
                  * - Update sequence numbers
                  */
+                 
+ // #########################################################################
+                nextSendSeqNo = nextSendSeqNo +1;
+
+   // ############################################################
 
 
                 // Update timers
@@ -342,6 +379,21 @@ int main(int argc, char** argv) {
                  * - timercmp(a, b, cmp) // NOTE: cmp is a comparison operator
                  *                          like <, >, <=, >=, ==
                  */
+         // ###########################################################################
+                struct timeval savetimeout;
+                timeradd(&currentTime, &timeout, &savetimeout);
+                getDataPacketFromBuffer(dataBuffer, nextSendSeqNo-1)->timeout=savetimeout;
+                if(timerExpiration.tv_sec==LONG_MAX){
+                	timerExpiration = savetimeout;
+                	DEBUGOUT("TimerExpiration set..%ul",timerExpiration.tv_sec);
+                }
+                //checking if current time is bigger timerExpiration. resending of all packages.
+                if(timercmp(&currentTime, &timerExpiration, >=)){
+                	nextSendSeqNo=0;
+                	timerExpiration.tv_sec =LONG_MAX;
+                }
+                
+        // ###########################################################################
 
 
             }

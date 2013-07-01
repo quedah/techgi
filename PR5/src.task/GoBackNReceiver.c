@@ -32,14 +32,14 @@
 
 #define DEBUG
 #ifdef DEBUG
-#define DEBUGOUT(x, ...) fprintf(stderr, x, __VA_ARGS__)
+#define DEBUGOUT( ...) fprintf(stderr,  __VA_ARGS__)
 #else
-#define DEBUGOUT(x, ...)
+#define DEBUGOUT( ...)
 #endif
 
-#define DEFAULT_LOCAL_PORT 12105
+#define DEFAULT_LOCAL_PORT 12465
 
-#define DEFAULT_REMOTE_PORT 4343
+#define DEFAULT_REMOTE_PORT 4848
 #define DEFAULT_PAYLOAD_SIZE 1024
 
 unsigned       localPort, remotePort;
@@ -199,24 +199,51 @@ int main(int argc, char** argv) {
 	data->size = bytesRead;
 	totalBytes += bytesRead-sizeof(*data);
 
-        /* YOUR TASK:
-         * - Check packet for errors
-         * - Check if packet is
-         *   # the one we are expecting
-         *   # an older one
-         *   # too new (we missed at least one packet)
-         * - Acknowledge the packet if appropriate (in which of the cases?)
-         * - Write packet to file if appropriate
-         * - Update sequence number counter
-         * - Update goodBytes
-         * - If this was the last packet of the transmission
-         *   (data->size == sizeof(*data)) close the file with fclose and
-         *   output totalBytes and goodBytes
-         *
-         * FUNCTIONS YOU MAY NEED:
-         * - writeBuffer(FILE*, GoBackNMessageStruct*)
-         * - sendAck(int, GoBackNMessageStruct*, long)
-         */
+        /* YOUR TASK:*/
+		
+		// Check packet for errors
+		if(data->hasErrors)
+			 {
+				DEBUGOUT("recieved data package has error\n");
+			 } else
+			 {
+				
+				if(data->seqNo<lastReceivedSeqNo+1) // # an older one
+				{
+					DEBUGOUT("recievd data package seqNo to low-> old package\n");
+					sendAck(s, &data, lastReceivedSeqNo+1);
+				}
+				else if(data->seqNo>lastReceivedSeqNo+1) // # too new (we missed at least one packet)
+				{
+					DEBUGOUT("recievd data package seqNo to high-> too new\n");
+					sendAck(s, &data, lastReceivedSeqNo+1);
+				}
+				else // # is the one we are expecting
+				{
+					// Acknowledge the packet if appropriate
+					sendAck(s, &data, data->seqNo+1);
+					
+					// Write packet to file if appropriate
+					writeBuffer(&output, &data);
+					
+					// Update sequence number counter
+					lastReceivedSeqNo=data->seqNo;
+					// Update goodBytes
+					goodBytes+=bytesRead;
+					// If this was the last packet of the transmission
+					if(sizeof(*data)==data->size)
+					{
+						//  close the file with fclose and
+						fclose(output);
+
+						//   output totalBytes and goodBytes
+						DEBUGOUT("file recieved. total bytes: %d, good bytes: %d errounous Bytes\n", totalBytes, goodBytes, (totalBytes-goodBytes) );
+						freeGoBackNMessageStruct(data);
+					}
+				}
+			 }
+		
+
 
 
 	freeGoBackNMessageStruct(data);
