@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
     // open connection
     int s = openConnection();
 
-    while (lastAckSeqNo<veryLastSeqNo) {
+    while (lastAckSeqNo < veryLastSeqNo) {
         DEBUGOUT("nextSendSeqNo: %ld, lastAckSeqNo: %ld\n", nextSendSeqNo, lastAckSeqNo);
 
         fd_set readfds, writefds;
@@ -332,26 +332,24 @@ int main(int argc, char** argv) {
              * FUNCTIONS YOU MAY NEED:
              * - resetTimers()
              */
-
-
+            nextSendSeqNo = lastAckSeqNo + 1;
+            resetTimers(dataBuffer);
         }
 
         // Send packets
         if (FD_ISSET(s, &writefds)) {
-            while ( nextSendSeqNo - lastAckSeqNo < window  
-                &&  nextSendSeqNo < veryLastSeqNo
-                /* YOUR TASK: When are you allowed to send new packets? */) {
-                
+            while ( nextSendSeqNo - lastAckSeqNo < window &&  nextSendSeqNo <= veryLastSeqNo) {
+                /* YOUR TASK: When are you allowed to send new packets? */
+
                 DataPacket * data = getDataPacketFromBuffer(dataBuffer, nextSendSeqNo);
 
+                sleep(0.1);
                 // Send data
                 if (data == NULL || data->packet == NULL || data->packet->size == NULL) {
                   puts("Data all done.");
                   exit(0);
                 }
 
-                //printf("HELLOOOOO %zu",data->packet->size);
-                printf("SeqNo %zu",nextSendSeqNo);
                 if (data->packet->size > 0) {
 
                   int retval = send(s, data->packet, data->packet->size, MSG_DONTWAIT);
