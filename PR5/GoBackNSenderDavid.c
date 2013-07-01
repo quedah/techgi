@@ -154,7 +154,7 @@ bool readIntoBuffer(FILE* file, long seqNo) {
     dataPacket->packet->seqNoExpected = -1;
     dataPacket->packet->hasErrors = false;
     size_t bytesRead = fread(dataPacket->packet->data, 1, DEFAULT_PAYLOAD_SIZE, file);
-    DEBUGOUT("FILE: %u bytes read\n", bytesRead);
+    DEBUGOUT("FILE: %zu bytes read\n", bytesRead);
     dataPacket->packet->size = bytesRead + sizeof(GoBackNMessageStruct);
     if (bytesRead < DEFAULT_PAYLOAD_SIZE) {
         if (ferror(file)) {
@@ -261,7 +261,7 @@ int main(int argc, char** argv) {
 
             /* YOUR TASK:*/
               // Check acknowledgement for errors
-			 if(ack->hasError)
+			 if(ack->hasErrors)
 			 {
 				DEBUGOUT("ack has error\n");
 			 }else
@@ -284,10 +284,10 @@ int main(int argc, char** argv) {
 					//# No packets waiting for acknowledgement
 					// TODO
 					// # Still sent but unacknowledged packets in the buffer
-					DataPacket* dp=getDataPacketFromBuffer(databuffer, ack->seqNoExpected+1);
+					DataPacket* dp=getDataPacketFromBuffer(dataBuffer, ack->seqNoExpected+1);
 					if(dp)
 					{
-						timerExpiration=dp->timevall;
+						timerExpiration=dp->timeval;
 					}
 					
 					
@@ -384,9 +384,9 @@ int main(int argc, char** argv) {
                 struct timeval savetimeout;
                 timeradd(&currentTime, &timeout, &savetimeout);
                 getDataPacketFromBuffer(dataBuffer, nextSendSeqNo-1)->timeout=&savetimeout;
-                if(timerExpiration.tv_sec=LONG_MAX){
+                if(timerExpiration.tv_sec==LONG_MAX){
                 	&timerExpiration=&savetimeout
-                	DEBUGOUT("TimerExpiration set..");
+                	DEBUGOUT("TimerExpiration set..%ul",timerExpiration.tv_sec);
                 }
                 //checking if current time is bigger timerExpiration. resending of all packages.
                 if(timercmp(&currentTime, &timerExpiration, >=)){
