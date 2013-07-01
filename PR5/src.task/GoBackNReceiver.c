@@ -215,20 +215,20 @@ int main(int argc, char** argv) {
 				if(data->seqNo<lastReceivedSeqNo+1) // # an older one
 				{
 					DEBUGOUT("recievd data package seqNo to low-> old package\n");
-					sendAck(s, data->packet, lastReceivedSeqNo+1);
+					sendAck(s, data, lastReceivedSeqNo+1);
 				}
 				else if(data->seqNo>lastReceivedSeqNo+1) // # too new (we missed at least one packet)
 				{
 					DEBUGOUT("recievd data package seqNo to high-> too new\n");
-					sendAck(s, data->packet, lastReceivedSeqNo+1);
+					sendAck(s, data, lastReceivedSeqNo+1);
 				}
 				else // # is the one we are expecting
 				{
 					// Acknowledge the packet if appropriate
-					sendAck(s, data->packet, data->seqNo+1);
+					sendAck(s, data, data->seqNo+1);
 					
 					// Write packet to file if appropriate
-					writeBuffer(output, data->packet);
+					writeBuffer(output, data);
 					
 					// Update sequence number counter
 					lastReceivedSeqNo=data->seqNo;

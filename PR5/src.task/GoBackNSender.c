@@ -339,7 +339,7 @@ int main(int argc, char** argv) {
         // Send packets
         if (FD_ISSET(s, &writefds)) {
             while ( nextSendSeqNo - lastAckSeqNo < window  
-                &&  nextSendSeqNo <= veryLastSeqNo
+                &&  nextSendSeqNo < veryLastSeqNo
                 /* YOUR TASK: When are you allowed to send new packets? */) {
                 
                 DataPacket * data = getDataPacketFromBuffer(dataBuffer, nextSendSeqNo);
@@ -352,17 +352,23 @@ int main(int argc, char** argv) {
 
                 //printf("HELLOOOOO %zu",data->packet->size);
                 printf("SeqNo %zu",nextSendSeqNo);
-                int retval = send(s, data->packet, data->packet->size, MSG_DONTWAIT);
-                if (retval < 0) {
-                    if (errno == EAGAIN) break;
-                    else {
-                        perror("send");
-                        exit(1);
-                    }
+                if (data->packet->size > 0) {
+
+                  int retval = send(s, data->packet, data->packet->size, MSG_DONTWAIT);
+                  if (retval < 0) {
+                      if (errno == EAGAIN) break;
+                      else {
+                          perror("send");
+                          exit(1);
+                      }
+                  }
+
+                  DEBUGOUT("SOCKET: %d bytes sent\n", retval);
+
+                } else {
+                  printf("Packet Size %zu",data->packet->size);
+                  exit(0);
                 }
-
-                DEBUGOUT("SOCKET: %d bytes sent\n", retval);
-
                 /* YOUR TASK: Sending was successful, what now? 
                  * - Update sequence numbers
                  */
