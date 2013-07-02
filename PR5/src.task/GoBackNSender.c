@@ -210,11 +210,13 @@ int main(int argc, char** argv) {
 
     // read file
     long veryLastSeqNo = readFileIntoBuffer();
-    DEBUGOUT("veryLastSeqNo: %ld\n",veryLastSeqNo);
+    DEBUGOUT("Init completed veryLastSeqNo: %ld\n",veryLastSeqNo);
 
     // open connection
     int s = openConnection();
+	puts("connection opened\n");
 
+	// send until last package is acknowlegded
     while (lastAckSeqNo < veryLastSeqNo) {
         DEBUGOUT("nextSendSeqNo: %ld, lastAckSeqNo: %ld\n", nextSendSeqNo, lastAckSeqNo);
 
@@ -232,6 +234,7 @@ int main(int argc, char** argv) {
         struct timeval selectTimeout, currentTime;
         if (gettimeofday(&currentTime, NULL) < 0) {
             perror("gettimeofday");
+			 close(s);
             exit(1);
         }
         DEBUGOUT("current time: %ld,%ld\n",
@@ -241,6 +244,7 @@ int main(int argc, char** argv) {
         if (selectTimeout.tv_sec < 0 || selectTimeout.tv_usec < 0) {
             fprintf(stderr, "WARNING: Timeout was negative (%ld,%ld)\n", selectTimeout.tv_sec, selectTimeout.tv_usec);
             selectTimeout.tv_sec = selectTimeout.tv_usec = 0;
+			 close(s);
             exit(1);
         }
        
@@ -257,10 +261,12 @@ int main(int argc, char** argv) {
             GoBackNMessageStruct * ack = allocateGoBackNMessageStruct(0);
             if ((bytesRead = recv(s, ack, sizeof(*ack), MSG_DONTWAIT)) < 0) {
                 perror("recv");
+				 close(s);
                 exit(1);
             }
+			
             DEBUGOUT("SOCKET: %d bytes received\n", bytesRead);
-
+			DEBUGOUT("ack has recieved\n");
             /* YOUR TASK:*/
               // Check acknowledgement for errors
 			 if(ack->hasErrors)
@@ -275,7 +281,7 @@ int main(int argc, char** argv) {
 				else
 				{
 					// Free buffers of acknowledged packets
-					freeBuffer(dataBuffer, lastAckSeqNo, ack->seqNoExpected-1);
+					freeBuffer(dataBuffer, getFirstSeqNoOfBuffer(dataBuffer), ack->seqNoExpected-1);
 					
 					// Set lastAckSeqNo as needed
 					lastAckSeqNo=ack->seqNoExpected-1;
@@ -289,6 +295,10 @@ int main(int argc, char** argv) {
 					if(dp)
 					{
 						timerExpiration=dp->timeout;
+					}
+					if (nextSendSeqNo < ack->seqNoExpected)
+						nextSendSeqNo = ack->seqNoExpected;
+						DEBUGOUT("ACK Received: %d. New nextSendSeqNo: %d, first seq buffer %d\n", lastAckSeqNo, nextSendSeqNo, getFirstSeqNoOfBuffer(dataBuffer));
 					}
 					
 					
@@ -316,6 +326,7 @@ int main(int argc, char** argv) {
         // Handle timeout
         if (gettimeofday(&currentTime, NULL) < 0) {
             perror("gettimeofday");
+			 close(s);
             exit(1);
         }
         DEBUGOUT("current time: %ld,%ld\n",
@@ -332,6 +343,7 @@ int main(int argc, char** argv) {
              * FUNCTIONS YOU MAY NEED:
              * - resetTimers()
              */
+			 
             nextSendSeqNo = lastAckSeqNo + 1;
             resetTimers(dataBuffer);
         }
@@ -347,6 +359,7 @@ int main(int argc, char** argv) {
                 // Send data
                 if (data == NULL || data->packet == NULL || data->packet->size == NULL) {
                   puts("Data all done.");
+				   close(s);
                   exit(0);
                 }
 
@@ -357,14 +370,16 @@ int main(int argc, char** argv) {
                       if (errno == EAGAIN) break;
                       else {
                           perror("send");
+						   close(s);
                           exit(1);
                       }
                   }
 
-                  DEBUGOUT("SOCKET: %d bytes sent\n", retval);
+                  DEBUGOUT("send packet SOCKET: %d bytes sent\n", retval);
 
                 } else {
                   printf("Packet Size %zu",data->packet->size);
+				   close(s);
                   exit(0);
                 }
                 /* YOUR TASK: Sending was successful, what now? 
@@ -397,17 +412,17 @@ int main(int argc, char** argv) {
                  */
          // ###########################################################################
                 struct timeval savetimeout;
-                timeradd(&currentTime, &timeout, &savetimeout);
-                getDataPacketFromBuffer(dataBuffer, nextSendSeqNo-1)->timeout=savetimeout;
+                timeradd(&currentTime, &timeout, &data->timeout);
                 if(timerExpiration.tv_sec==LONG_MAX){
-                	timerExpiration = savetimeout;
-                	DEBUGOUT("TimerExpiration set..%ul",timerExpiration.tv_sec);
+                	timerExpiration = &data->timeout;
+                	
                 }
                 //checking if current time is bigger timerExpiration. resending of all packages.
                 if(timercmp(&currentTime, &timerExpiration, >=)){
                 	nextSendSeqNo=0;
                 	timerExpiration.tv_sec =LONG_MAX;
                 }
+				DEBUGOUT("TimerExpiration set..%ul",timerExpiration.tv_sec);
                 
         // ###########################################################################
 
