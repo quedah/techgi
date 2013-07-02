@@ -81,7 +81,6 @@ void initialize(int argc, char** argv) {
                 retval = sscanf(optarg, "%u", &remotePort);
                 if (retval < 1) help(1);
                 break;
-                
 
             case 'h':
                 help(0);
@@ -173,15 +172,12 @@ int main(int argc, char** argv) {
 
     ssize_t bytesRead = 0;
     while (1) {
-
-      GoBackNMessageStruct* data = allocateGoBackNMessageStruct(DEFAULT_PAYLOAD_SIZE);
-
-      if (recv(s, data, sizeof(*data), MSG_PEEK) < 0) {
-          perror("recv(MSG_PEEK)");
-          exit(1);
-      }
-
-      bytesRead = data->size;
+	GoBackNMessageStruct* data = allocateGoBackNMessageStruct(DEFAULT_PAYLOAD_SIZE);
+        if (recv(s, data, sizeof(*data), MSG_PEEK) < 0) {
+            perror("recv(MSG_PEEK)");
+            exit(1);
+        }
+        bytesRead = data->size;
 	bytesRead = recv(s, data, data->size, 0);
         if (bytesRead < 0) {
 	    perror("recv");
@@ -215,20 +211,20 @@ int main(int argc, char** argv) {
 				if(data->seqNo<lastReceivedSeqNo+1) // # an older one
 				{
 					DEBUGOUT("recievd data package seqNo to low-> old package\n");
-					sendAck(s, data, lastReceivedSeqNo+1);
+					sendAck(s, &data, lastReceivedSeqNo+1);
 				}
 				else if(data->seqNo>lastReceivedSeqNo+1) // # too new (we missed at least one packet)
 				{
 					DEBUGOUT("recievd data package seqNo to high-> too new\n");
-					sendAck(s, data, lastReceivedSeqNo+1);
+					sendAck(s, &data, lastReceivedSeqNo+1);
 				}
 				else // # is the one we are expecting
 				{
 					// Acknowledge the packet if appropriate
-					sendAck(s, data, data->seqNo+1);
+					sendAck(s, &data, data->seqNo+1);
 					
 					// Write packet to file if appropriate
-					writeBuffer(output, data);
+					writeBuffer(&output, &data);
 					
 					// Update sequence number counter
 					lastReceivedSeqNo=data->seqNo;

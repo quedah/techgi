@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
     // open connection
     int s = openConnection();
 
-    while (lastAckSeqNo < veryLastSeqNo) {
+    while (lastAckSeqNo<veryLastSeqNo) {
         DEBUGOUT("nextSendSeqNo: %ld, lastAckSeqNo: %ld\n", nextSendSeqNo, lastAckSeqNo);
 
         fd_set readfds, writefds;
@@ -241,10 +241,8 @@ int main(int argc, char** argv) {
         if (selectTimeout.tv_sec < 0 || selectTimeout.tv_usec < 0) {
             fprintf(stderr, "WARNING: Timeout was negative (%ld,%ld)\n", selectTimeout.tv_sec, selectTimeout.tv_usec);
             selectTimeout.tv_sec = selectTimeout.tv_usec = 0;
-            exit(1);
         }
-       
-
+        
         int n;
         if ((n = select(s+1, &readfds, &writefds, NULL, &selectTimeout)) < 0) {
             perror("select");
@@ -332,41 +330,27 @@ int main(int argc, char** argv) {
              * FUNCTIONS YOU MAY NEED:
              * - resetTimers()
              */
-            nextSendSeqNo = lastAckSeqNo + 1;
-            resetTimers(dataBuffer);
+
+
         }
 
         // Send packets
         if (FD_ISSET(s, &writefds)) {
-            while ( nextSendSeqNo - lastAckSeqNo < window &&  nextSendSeqNo <= veryLastSeqNo) {
-                /* YOUR TASK: When are you allowed to send new packets? */
-
+            while (nextSendSeqNo < window /* YOUR TASK: When are you allowed to send new packets? */) {
                 DataPacket * data = getDataPacketFromBuffer(dataBuffer, nextSendSeqNo);
 
-                sleep(0.1);
                 // Send data
-                if (data == NULL || data->packet == NULL || data->packet->size == NULL) {
-                  puts("Data all done.");
-                  exit(0);
+                int retval = send(s, data->packet, data->packet->size, MSG_DONTWAIT);
+                if (retval < 0) {
+                    if (errno == EAGAIN) break;
+                    else {
+                        perror("send");
+                        exit(1);
+                    }
                 }
 
-                if (data->packet->size > 0) {
+                DEBUGOUT("SOCKET: %d bytes sent\n", retval);
 
-                  int retval = send(s, data->packet, data->packet->size, MSG_DONTWAIT);
-                  if (retval < 0) {
-                      if (errno == EAGAIN) break;
-                      else {
-                          perror("send");
-                          exit(1);
-                      }
-                  }
-
-                  DEBUGOUT("SOCKET: %d bytes sent\n", retval);
-
-                } else {
-                  printf("Packet Size %zu",data->packet->size);
-                  exit(0);
-                }
                 /* YOUR TASK: Sending was successful, what now? 
                  * - Update sequence numbers
                  */

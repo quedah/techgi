@@ -47,7 +47,7 @@ void ProtSimSocketRTScheduler::startRun()
 
     gettimeofday(&baseTime, NULL);
 
-    port = ev.config()->getAsInt("General", "socketrtscheduler-port", 4343);
+    port = ev.config()->getAsInt("General", "socketrtscheduler-port", 4848);
     numApplPerNode = ev.config()->getAsInt("General", "socketrtscheduler-appl-per-node", 10);
     numNodes = ev.config()->getAsInt("General", "socketrtscheduler-num-nodes", 20);
     setupListener();
