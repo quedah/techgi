@@ -178,6 +178,7 @@ int main(int argc, char** argv) {
 
       if (recv(s, data, sizeof(*data), MSG_PEEK) < 0) {
           perror("recv(MSG_PEEK)");
+		   close(s);
           exit(1);
       }
 
@@ -185,6 +186,7 @@ int main(int argc, char** argv) {
 	bytesRead = recv(s, data, data->size, 0);
         if (bytesRead < 0) {
 	    perror("recv");
+		 close(s);
 	    exit(1);
 	}
         if (bytesRead < data->size) {
@@ -252,4 +254,5 @@ int main(int argc, char** argv) {
 
 	freeGoBackNMessageStruct(data);
     }
+	close(s);
 }

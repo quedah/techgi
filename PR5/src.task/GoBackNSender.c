@@ -252,6 +252,7 @@ int main(int argc, char** argv) {
         int n;
         if ((n = select(s+1, &readfds, &writefds, NULL, &selectTimeout)) < 0) {
             perror("select");
+			 close(s);
             exit(1);
         }
 
