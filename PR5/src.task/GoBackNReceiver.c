@@ -37,7 +37,7 @@
 #define DEBUGOUT( ...)
 #endif
 
-#define DEFAULT_LOCAL_PORT 12465
+#define DEFAULT_LOCAL_PORT 12105
 
 #define DEFAULT_REMOTE_PORT 4848
 #define DEFAULT_PAYLOAD_SIZE 1024
@@ -245,6 +245,8 @@ int main(int argc, char** argv) {
 						//   output totalBytes and goodBytes
 						DEBUGOUT("file recieved. total bytes: %d, good bytes: %d errounous Bytes\n", totalBytes, goodBytes, (totalBytes-goodBytes) );
 						freeGoBackNMessageStruct(data);
+            close(s);
+            exit(0);
 					}
 				}
 			 }

@@ -40,7 +40,7 @@
 #define DEBUGOUT(...)
 #endif
 
-#define DEFAULT_LOCAL_PORT 12125
+#define DEFAULT_LOCAL_PORT 12005
 #define DEFAULT_REMOTE_PORT 4848
 #define DEFAULT_PAYLOAD_SIZE 1024
 #define MAX_FILE_SIZE 1024
@@ -298,6 +298,7 @@ int main(int argc, char** argv) {
 						timerExpiration=dp->timeout;
 					}
 					if (nextSendSeqNo < ack->seqNoExpected)
+          {
 						nextSendSeqNo = ack->seqNoExpected;
 						DEBUGOUT("ACK Received: %d. New nextSendSeqNo: %d, first seq buffer %d\n", lastAckSeqNo, nextSendSeqNo, getFirstSeqNoOfBuffer(dataBuffer));
 					}
@@ -351,7 +352,7 @@ int main(int argc, char** argv) {
 
         // Send packets
         if (FD_ISSET(s, &writefds)) {
-            while ( nextSendSeqNo - lastAckSeqNo < window &&  nextSendSeqNo <= veryLastSeqNo) {
+            while (nextSendSeqNo - lastAckSeqNo < window &&  nextSendSeqNo <= veryLastSeqNo) {
                 /* YOUR TASK: When are you allowed to send new packets? */
 
                 DataPacket * data = getDataPacketFromBuffer(dataBuffer, nextSendSeqNo);
@@ -390,7 +391,7 @@ int main(int argc, char** argv) {
  // #########################################################################
                 nextSendSeqNo = nextSendSeqNo +1;
 
-   // ############################################################
+ // ############################################################
 
 
                 // Update timers
@@ -414,8 +415,8 @@ int main(int argc, char** argv) {
          // ###########################################################################
                 struct timeval savetimeout;
                 timeradd(&currentTime, &timeout, &data->timeout);
-                if(timerExpiration.tv_sec==LONG_MAX){
-                	timerExpiration = &data->timeout;
+                if (timerExpiration.tv_sec==LONG_MAX){
+                	timerExpiration = data->timeout;
                 	
                 }
                 //checking if current time is bigger timerExpiration. resending of all packages.
